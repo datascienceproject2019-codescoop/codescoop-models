@@ -1,0 +1,18 @@
+version: "3.5"
+
+services:
+  ghmongo:
+    image: mongo:4.0.6
+    ports:
+    - 27000:27017
+    environment:
+    - MONGO_INITDB_ROOT_USERNAME=mongo-admin
+    - MONGO_INITDB_ROOT_PASSWORD=mongo-pass
+    - MONGO_INITDB_DATABASE=github
+    volumes:
+    - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    - ./gh_mongo_data:/data/db
+    - ./gh_mongo_dumps:/gh_mongo_dumps
+networks:
+  default:
+    name: codescoop-stack

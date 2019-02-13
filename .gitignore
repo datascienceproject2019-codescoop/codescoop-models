@@ -1,0 +1,6 @@
+.DS_Store
+.env
+gh_*/
+tmp/
+mongo-dump-*.tar.gz
+mysql-*.sql.gz
