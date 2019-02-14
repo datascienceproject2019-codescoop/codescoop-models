@@ -6,7 +6,7 @@ This repository contains the scripts and files used to download and run our mode
 
 ## Prerequisites
 
-Download Docker, Docker Compose. Make sure your file sharing is on for this folder (so Docker can mount this directory for the containers). Also you'll need ~35 GBs free space for any of GHTorrent's database shenanigans.
+Download Docker, Docker Compose. Make sure your file sharing is on for this folder (so Docker can mount this directory for the containers). Also you'll need ~20 GBs free space for any of GHTorrent's database shenanigans.
 
 If you're using Windows *and* Docker Toolbox I feel sorry for you.
 
@@ -28,13 +28,18 @@ This database contains GitHub event data from here http://ghtorrent-downloads.ew
 
 This database contains GitHub event data from here http://ghtorrent.org/downloads.html. It's schema is described here http://ghtorrent.org/files/schema.pdf and the corresponding GitHub API URLs here http://ghtorrent.org/mongo.html (with examples if you click the "Documentation URL" eg https://developer.github.com/v3/repos/comments/#list-comments-for-a-single-commit).
 
+The restoring with direct piping took me 3 hours with my MacBook Pro. Total size of data was with default dump 4.2 GB tarball + 8.9 GB as MongoDB data. Also the MongoDB docker image is 400 MB. So you should have at least (preferably well over) 13.5 GB of free space.
+
 1) Start up the database: `docker-compose up ghmongo` or `./commands mongo:start`
 2) Download the second smallest dump (still 4.2 GB, uncompressed 26 GB :DD). Date is optional variable, we're using the second smallest dataset of 2015-12-02 as the default: `./commands.sh mongo:getdump [?date]`
-3) We'll need to uncompress the downloaded tar.gz file BUT since it's sooper larger we'll only unzip the metadatas and then untar the BSON files as separate command piping the contents directly to mongorestore. This will avoid the temporal duplication of the data (to 60 GBs). Inspired by the scripts here https://gist.github.com/gousiosg/e16f4348d64fb907e5d8306401f36fa6 Unzip the metadata with: `./commands mongo:unzip [?date]`
-5) Restore the dump from the metadatas and the BSON files: `./commands.sh mongo:restore [?date]`
-6) Open up the shell to see if it worked: `./commands.sh mongo:shell`. Run `db.forks.count()` and if the number is non-zero hurray! You can now start getting lost into MongoDB documentation.
 
-I ran this using my MacBookPro with SSD and stuff so with less powerful machine it might take longer. To view the size of the folders afterwards in macOS you can use: `du -hd1`.
+Well since I wanted to make things difficult I avoided the extraction of the data by directly uncompressing the tarball BSON files to mongorestore thus avoiding the 26 GB extra stuff on disk. BUT the problem is it takes a lot longer with streaming. But anyway.
+
+3) To avoid extracting the large BSON files, extract only the metadatas. We however have to grep the filenames of those BSON files which is why this takes a while. Unzip the metadata with: `./commands mongo:unzip [?date]`
+4) Restore the dump from the metadatas and the BSON files: `./commands.sh mongo:restore [?date]`
+5) Open up the shell to see if it worked: `./commands.sh mongo:shell`. Run `db.commits.count()` and if the number is 932677 hurray! You can now start getting lost into MongoDB documentation.
+
+I ran this using my MacBook Pro with SSD and stuff so with less powerful machine it might take longer. To view the size of the folders afterwards in macOS you can use: `du -hd1`.
 
 To delete the database, run: `./commands.sh mongo:delete`. Otherwise the data will be persisted on disk even when the MongoDB instance is destroyed.
 

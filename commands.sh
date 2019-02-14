@@ -32,16 +32,10 @@ case "$1" in
     cd gh_mongo_dumps/$DUMP_DATE
     tar xzvf mongo-dump-$DUMP_DATE.tar.gz *.json
     cd ../..
-    ;;
-  mongo:restore)
-    # Restores first the metadatas
-    #docker-compose exec ghmongo mongorestore /gh_mongo_dumps/$DUMP_DATE/dump/github -d github -u github-user -p github-pass
 
-    # Then the really messy part of streaming single BSON files directly into the mongorestore command.
-    # This way we are avoiding the extraction of the files which would result in temporarily duplication of
-    # very large files. Sure maybe you could extract them one by one and then delete them as they restored, I don't know.
-    # This is how it works now. :)
-
+    echo "Now extracts the filepaths from the tarball"
+    # After extracting the metadata, view the files inside the tarball and grep the BSON file paths
+    # since they are required for tar to stream the single files to the mongorestore.
     # 1. List all the files inside the tarball
     # 2. Grep all the bson files 
     # 3. Print out their filepaths
@@ -50,12 +44,21 @@ case "$1" in
       | grep bson \
       | awk '{print $9}' \
       > gh_mongo_dumps/$DUMP_DATE/files.txt
+    ;;
+  mongo:restore)
+    # Restores first the metadatas
+    docker-compose exec ghmongo mongorestore /gh_mongo_dumps/$DUMP_DATE/dump/github -d github -u github-user -p github-pass
+
+    # Then the really messy part of streaming single BSON files directly into the mongorestore command.
+    # This way we are avoiding the extraction of the files which would result in temporarily duplication of
+    # very large files. Sure maybe you could extract them one by one and then delete them as they restored, I don't know.
+    # This is how it works now. :)
 
     # Execute the restore script inside the container as a separate script since piping to docker exec
     # doesn't really work as well as I'd like to.
     # It will read the file paths of the BSON files from the files.txt and then one by one:
     # 1. Extract the collection name
-    # 2. Untar it and stream it to STDOUT
+    # 2. Untar it and stream it to STDIN
     # 3. Pipe it to mongorestore
     docker-compose exec ghmongo bash ./gh_mongo_scripts/restore.sh $DUMP_DATE
     ;;
