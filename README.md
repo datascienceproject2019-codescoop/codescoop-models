@@ -30,24 +30,24 @@ This database contains GitHub event data from here http://ghtorrent.org/download
 
 The restoring with direct piping took me 3 hours with my MacBook Pro. Total size of data was with default dump 4.2 GB tarball + 8.9 GB as MongoDB data. Also the MongoDB docker image is 400 MB. So you should have at least (preferably well over) 13.5 GB of free space.
 
-1) Start up the database: `docker-compose up ghmongo` or `./commands mongo:start`
-2) Download the second smallest dump (still 4.2 GB, uncompressed 26 GB :DD). Date is optional variable, we're using the second smallest dataset of 2015-12-02 as the default: `./commands.sh mongo:getdump [?date]`
+1) Start up the database: `docker-compose up ghmongo` or `./cmd.sh mongo:start`
+2) Download the second smallest dump (still 4.2 GB, uncompressed 26 GB :DD). Date is optional variable, we're using the second smallest dataset of 2015-12-02 as the default: `./cmd.sh mongo:getdump [?date]`
 
 Well since I wanted to make things difficult I avoided the extraction of the data by directly uncompressing the tarball BSON files to mongorestore thus avoiding the 26 GB extra stuff on disk. BUT the problem is it takes a lot longer with streaming. But anyway.
 
-3) To avoid extracting the large BSON files, extract only the metadatas. We however have to grep the filenames of those BSON files which is why this takes a while. Unzip the metadata with: `./commands mongo:unzip [?date]`
-4) Restore the dump from the metadatas and the BSON files: `./commands.sh mongo:restore [?date]`
-5) Open up the shell to see if it worked: `./commands.sh mongo:shell`. Run `db.commits.count()` and if the number is 932677 hurray! You can now start getting lost into MongoDB documentation.
+3) To avoid extracting the large BSON files, extract only the metadatas. We however have to grep the filenames of those BSON files which is why this takes a while. Unzip the metadata with: `./cmd.sh mongo:unzip [?date]`
+4) Restore the dump from the metadatas and the BSON files: `./cmd.sh mongo:restore [?date]`
+5) Open up the shell to see if it worked: `./cmd.sh mongo:shell`. Run `db.commits.count()` and if the number is 932677 hurray! You can now start getting lost into MongoDB documentation.
 
 I ran this using my MacBook Pro with SSD and stuff so with less powerful machine it might take longer. To view the size of the folders afterwards in macOS you can use: `du -hd1`.
 
-To delete the database, run: `./commands.sh mongo:delete`. Otherwise the data will be persisted on disk even when the MongoDB instance is destroyed.
+To delete the database, run: `./cmd.sh mongo:delete`. Otherwise the data will be persisted on disk even when the MongoDB instance is destroyed.
 
 ### Mongo shell
 
 Is a Javascript based command line shell for directly running Mongo commands (like psql).
 
-Open it with: `./commands.sh mongo:shell`
+Open it with: `./cmd.sh mongo:shell`
 
 Some useful commands:
 * `db.adminCommand('listDatabases')` will list all the databases, github is the restored data.
