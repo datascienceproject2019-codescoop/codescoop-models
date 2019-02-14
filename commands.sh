@@ -20,24 +20,53 @@ case "$1" in
     curl -O http://ghtorrent-downloads.ewi.tudelft.nl/mongo-daily/mongo-dump-$DUMP_DATE.tar.gz
     cd ../..
     ;;
-  mongo:unzip)
+  mongo:unzip:all)
+    # Not used since uncompressing everything will generate ~26 GBs of files
     cd gh_mongo_dumps/$DUMP_DATE
     tar -xzvf mongo-dump-$DUMP_DATE.tar.gz
     cd ../..
     ;;
-  mongo:restore)
-    docker-compose exec ghmongo mongorestore /gh_mongo_dumps/$DUMP_DATE/dump/github/ -d github -u github-user -p github-pass
+  mongo:unzip)
+    # Untars only collection metadatas since they are small and *can't* be otherwise restored with the
+    # mongorestore command. Yes, this is crazy messy. But I don't make the rules. :DD
+    cd gh_mongo_dumps/$DUMP_DATE
+    tar xzvf mongo-dump-$DUMP_DATE.tar.gz *.json
+    cd ../..
     ;;
-  mongo:load)
-    # zcat gh_mongo_dumps/$DUMP_DATE/mongo-dump-$DUMP_DATE.tar.gz | docker-compose exec ghmongo mongorestore -u mongo-admin -p mongo-pass -
-    # zcat < gh_mongo_dumps/$DUMP_DATE/mongo-dump-$DUMP_DATE.tar.gz | docker-compose exec ghmongo mongorestore -u mongo-admin -p mongo-pass -
-    # docker-compose exec ghmongo echo "gh_mongo_dumps/$DUMP_DATE/mongo-dump-$DUMP_DATE.tar.gz" > gh_mongo_dumps/asdf.txt
-    # docker-compose exec ghmongo zcat "gh_mongo_dumps/$DUMP_DATE/mongo-dump-$DUMP_DATE.tar.gz" > gh_mongo_dumps/asdf.txt
-    docker-compose exec ghmongo zcat "gh_mongo_dumps/$DUMP_DATE/mongo-dump-$DUMP_DATE.tar.gz" > ghmongo mongorestore -u mongo-admin -p mongo-pass -
-    # tar xvzf gh_mongo_dumps/$DUMP_DATE/mongo-dump-$DUMP_DATE.tar.gz | docker-compose exec ghmongo mongorestore -u mongo-admin -p mongo-pass -    
+  mongo:restore)
+    # Restores first the metadatas
+    #docker-compose exec ghmongo mongorestore /gh_mongo_dumps/$DUMP_DATE/dump/github -d github -u github-user -p github-pass
+
+    # Then the really messy part of streaming single BSON files directly into the mongorestore command.
+    # This way we are avoiding the extraction of the files which would result in temporarily duplication of
+    # very large files. Sure maybe you could extract them one by one and then delete them as they restored, I don't know.
+    # This is how it works now. :)
+
+    # 1. List all the files inside the tarball
+    # 2. Grep all the bson files 
+    # 3. Print out their filepaths
+    # 4. Save the results into files.txt
+    tar ztvf gh_mongo_dumps/$DUMP_DATE/mongo-dump-$DUMP_DATE.tar.gz \
+      | grep bson \
+      | awk '{print $9}' \
+      > gh_mongo_dumps/$DUMP_DATE/files.txt
+
+    # Execute the restore script inside the container as a separate script since piping to docker exec
+    # doesn't really work as well as I'd like to.
+    # It will read the file paths of the BSON files from the files.txt and then one by one:
+    # 1. Extract the collection name
+    # 2. Untar it and stream it to STDOUT
+    # 3. Pipe it to mongorestore
+    docker-compose exec ghmongo bash ./gh_mongo_scripts/restore.sh $DUMP_DATE
+    ;;
+  mongo:bash)
+    docker-compose exec ghmongo bash
     ;;
   mongo:shell)
     docker-compose exec ghmongo mongo github -u github-user -p github-pass
+    ;;
+  mysql:restore)
+    zcat /gh_mysql_dumps/$DUMP_DATE/mysql-$DUMP_DATE.sql.gz | mysql -u mysql-admin -p mysql-pass
     ;;
   *)
     echo $"Command '$1' not found, usage: $0 [service:action] [?dump_date eg 2015-12-02]"

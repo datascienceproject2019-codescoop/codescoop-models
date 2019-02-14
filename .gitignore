@@ -1,6 +1,9 @@
 .DS_Store
 .env
-gh_*/
+gh_mongo_data/
+gh_mongo_dumps/
+gh_mysql_data/
+gh_mysql_dumps/
 tmp/
 mongo-dump-*.tar.gz
 mysql-*.sql.gz

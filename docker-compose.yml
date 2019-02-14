@@ -13,6 +13,7 @@ services:
     - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
     - ./gh_mongo_data:/data/db
     - ./gh_mongo_dumps:/gh_mongo_dumps
+    - ./gh_mongo_scripts/:/gh_mongo_scripts
 networks:
   default:
     name: codescoop-stack
