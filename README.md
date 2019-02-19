@@ -118,11 +118,13 @@ Python 3, virtualenv installed. Also either the MongoDB or MySQL dump restored. 
 
 ## How to install
 
-1) Generate a virtualenv environment: `./jupyter.sh venv:create`. Or you can install locally, your call.
-2) Activate it by pasting this string to terminal: `./jupyter.sh venv`
+1) Generate a virtualenv environment: `./jupyter.sh venv:create`. Or you install without it, your call.
+2) Activate it by pasting this script's output to terminal: `./jupyter.sh venv`
 3) Install the requirements: `./jupyter.sh pip:install`
 4) Start the notebook: `./jupyter.sh notebook`. It should appear at http://localhost:8888
 
 ## How to use
 
 There's a GHTorrent sandbox notebook inside the `notebooks` folder. You can play with that.
+
+When you add new libraries don't forget to save the updated dependencies: `./jupyter pip:save`

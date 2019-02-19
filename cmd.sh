@@ -25,7 +25,7 @@ case "$1" in
     cd ../..
     ;;
   mongo:unzip:all)
-    # Not used since uncompressing everything will generate ~26 GBs of files
+    # Will generate ~26 GBs of files using default dump
     cd gh_mongo_dumps/$DUMP_DATE
     tar -xzvf mongo-dump-$DUMP_DATE.tar.gz
     cd ../..
@@ -87,6 +87,7 @@ case "$1" in
     cd ../..
     ;;
   maria:unzip)
+    # Creates a 20 GB sql file with default dump
     cd gh_maria_dumps/$DUMP_DATE
     tar -xzvf mysql-$DUMP_DATE.sql.gz
     cd ../..

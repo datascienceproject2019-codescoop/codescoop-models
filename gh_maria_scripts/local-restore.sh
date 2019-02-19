@@ -9,8 +9,6 @@ fi
 
 cat gh_maria_scripts/init-db.sql | mysql -uroot || true
 
-BASE_PATH=$(pwd)
-
 echo "#################### HOW TO RESTORE ######################"
 echo "Type the following to the mysql prompt:"
 echo "source gh_maria_dumps/$DUMP_DATE/mysql-$DUMP_DATE.sql;"
