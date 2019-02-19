@@ -19,6 +19,10 @@ NOTE: some scripts might not work as they should. Please tell me (Teemu) about i
   - [MySQL shell](#mysql-shell)
   - [MongoDB](#mongodb)
   - [Mongo shell](#mongo-shell)
+- [Jupyter](#jupyter)
+  - [Requirements](#requirements)
+  - [How to install](#how-to-install)
+  - [How to use](#how-to-use-1)
 
 <!-- tocstop -->
 
@@ -104,3 +108,21 @@ Some useful commands:
 * `db` shows the current database you're using.
 * `var forks = db.forks.find()` fetches all documents from `forks` and stores them into a variable. `forks[0]` will display the first item.
 
+# Jupyter
+
+So we are using Jupyter to create and run our models.
+
+## Requirements
+
+Python 3, virtualenv installed. Also either the MongoDB or MySQL dump restored. TODO: Use Github API
+
+## How to install
+
+1) Generate a virtualenv environment: `./jupyter.sh venv:create`. Or you can install locally, your call.
+2) Activate it by pasting this string to terminal: `./jupyter.sh venv`
+3) Install the requirements: `./jupyter.sh pip:install`
+4) Start the notebook: `./jupyter.sh notebook`. It should appear at http://localhost:8888
+
+## How to use
+
+There's a GHTorrent sandbox notebook inside the `notebooks` folder. You can play with that.
