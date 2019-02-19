@@ -9,6 +9,9 @@ if [ -z "$DUMP_DATE" ]; then
 fi
 
 case "$1" in
+  all:start)
+    docker-compose up
+    ;;
   mongo:start)
     docker-compose up ghmongo
     ;;
@@ -70,7 +73,7 @@ case "$1" in
     docker-compose exec ghmongo mongo github -u github-user -p github-pass
     ;;
   maria:start)
-    docker-compose -f mariadb-stack.yml up
+    docker-compose up ghmaria
     ;;
   maria:delete)
     docker-compose -f mariadb-stack.yml rm

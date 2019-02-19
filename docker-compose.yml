@@ -14,6 +14,19 @@ services:
     - ./gh_mongo_data:/data/db
     - ./gh_mongo_dumps:/gh_mongo_dumps
     - ./gh_mongo_scripts/:/gh_mongo_scripts
+  ghmaria:
+    image: mariadb:10.4.2
+    ports:
+    - 3300:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: maria-pass
+      MYSQL_DATABASE: github
+      MYSQL_USER: github-user
+      MYSQL_PASSWORD: github-pass
+    volumes:
+    - ./gh_maria_data:/var/lib/mysql
+    - ./gh_maria_dumps:/gh_maria_dumps
+    - ./gh_maria_scripts/:/gh_maria_scripts
 networks:
   default:
     name: codescoop-stack

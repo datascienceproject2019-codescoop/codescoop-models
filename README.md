@@ -2,6 +2,8 @@
 
 This repository contains the scripts and files used to download and run our models for our data science project.
 
+NOTE: some scripts might not work as they should. Please tell me (Teemu) about it.
+
 **Table of Contents**
 
 <!-- toc -->
@@ -44,15 +46,15 @@ https://cloud.google.com/bigquery/pricing
 
 This database contains GitHub event data from here http://ghtorrent-downloads.ewi.tudelft.nl/mysql/.
 
-**NOTE: since running this using Docker is BULLSHIT local installation of MariaDB is recommended**
+This is ridiculously slow either way you do it; locally or with Docker. I think using either one is fine. Now I have written two versions just to confuse people. Idk.
 
 ## Local installation
 
 1) Install MariaDB to your local machine, mine was 10.3 and it worked fine. If you're on macOS I recommend brew: `brew install mariadb`
-2) Get the dump, probably you should download it using your browser since curl hangs up at times for some reason. I'm using dump of `2014-01-02` http://ghtorrent-downloads.ewi.tudelft.nl/mysql/mysql-$DUMP_DATE.sql.gz.
-3) I recommend unzipping the data to see the actual queries being run and also you can continue a stopped restoring. The unzipped data will be 24 GBs *and* the database once restored at least 12 GBs. Of course if you can afford using extra 24 GBs: `./cmd.sh maria:unzip 2014-01-02`
+2) Get the dump, probably you should download it using your browser since curl hangs up at times for some reason. I'm using dump of `2014-01-02` http://ghtorrent-downloads.ewi.tudelft.nl/mysql
+3) I recommend unzipping the data to see the actual queries being run and also you can continue a stopped restoration. The unzipped data will be 24 GBs *and* the database once restored at least 12 GBs. Of course do it only if you can afford using extra 24 GBs: `./cmd.sh maria:unzip 2014-01-02`
 4) Run the script: `./gh_maria_scripts/local-restore.sh 2014-01-02`.
-5) Type in the command similar to `source gh_maria_dumps/2014-01-02/mysql-2014-01-02.sql;`.  This will generate x amount of data. Without unzipping just run `DUMP_DATE=2014-01-02 cat gh_maria_scripts/init-db.sql | mysql -uroot || true && zcat gh_maria_dumps/$DUMP_DATE/mysql-$DUMP_DATE.sql.gz | mysql -u github-user -pgithub-pass github`.
+5) Type in the command similar to `source gh_maria_dumps/2014-01-02/mysql-2014-01-02.sql;`. This will generate x amount of data. Without unzipping just run `DUMP_DATE=2014-01-02 cat gh_maria_scripts/init-db.sql | mysql -uroot || true && zcat gh_maria_dumps/$DUMP_DATE/mysql-$DUMP_DATE.sql.gz | mysql -u github-user -pgithub-pass github`.
 6) See if it has worked: `mysql -u github-user -pgithub-pass github` and execute: `select language,count() from projects where forked_from is null group by language;`. If it returns something, great! You are now a MySQL expert.
 7) When you no longer need the data run `./gh_maria_scripts/local-delete.sh` to delete it.
 
@@ -60,7 +62,7 @@ This database contains GitHub event data from here http://ghtorrent-downloads.ew
 
 1) Start up the database: `./cmd.sh maria:start`
 2) Download the second smallest dump of `2014-01-02` (5.5 GB): `./cmd.sh maria:getdump 2014-01-02`
-3) Restore the data: `./cmd.sh maria:restore 2014-01-02` (will take at least 3 hours)
+3) Either unzip (24 GBs) and restore the data so you can see the actual progress and continue a stopped restoration: `./cmd.sh maria:unzip 2014-01-02` and `./cmd.sh maria:restore 2014-01-02`. Or just stream the gzip directly to mysql: `./cmd.sh maria:restore:gz`.
 4) See if it has worked: `./cmd.sh maria:shell` and execute: `select language,count() from projects where forked_from is null group by language;`. If it returns something, great! You are now a MySQL expert.
 
 ## MySQL shell

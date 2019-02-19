@@ -8,8 +8,8 @@ if [ -z "$DUMP_DATE" ]; then
 fi
 
 echo "#################### HOW TO RESTORE ######################"
-echo "I hope you have provided your Docker container enough I/O, CPU and RAM"
-echo "to run this in a reasonable amount of time..."
+echo "Provide sufficient CPU and RAM to your Docker Engine."
+echo "What is sufficient? Well.. maybe at least 2 CPUs and 4 GBs RAM"
 echo "Type the following to the mysql prompt:"
 echo "source /gh_maria_dumps/$DUMP_DATE/mysql-$DUMP_DATE.sql;"
 echo "##########################################################"
