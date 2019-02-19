@@ -2,8 +2,8 @@
 .env
 gh_mongo_data/
 gh_mongo_dumps/
-gh_mysql_data/
-gh_mysql_dumps/
+gh_maria_data/
+gh_maria_dumps/
 tmp/
 mongo-dump-*.tar.gz
 mysql-*.sql.gz

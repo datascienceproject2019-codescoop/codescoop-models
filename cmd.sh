@@ -4,7 +4,8 @@ COMMAND=$1
 DUMP_DATE=$2
 
 if [ -z "$DUMP_DATE" ]; then
-  DUMP_DATE="2015-12-02" # Default dump
+  DUMP_DATE="2015-12-02" # Default MongoDB dump
+  # DUMP_DATE="2014-01-02" # Default MySQL dump
 fi
 
 case "$1" in
@@ -68,8 +69,36 @@ case "$1" in
   mongo:shell)
     docker-compose exec ghmongo mongo github -u github-user -p github-pass
     ;;
-  mysql:restore)
-    zcat /gh_mysql_dumps/$DUMP_DATE/mysql-$DUMP_DATE.sql.gz | mysql -u mysql-admin -p mysql-pass
+  maria:start)
+    docker-compose -f mariadb-stack.yml up
+    ;;
+  maria:delete)
+    docker-compose -f mariadb-stack.yml rm
+    rm -r gh_maria_data
+    ;;
+  maria:getdump)
+    mkdir -p gh_maria_dumps/$DUMP_DATE
+    cd gh_maria_dumps/$DUMP_DATE
+    echo "NOTE: use browser to download this if your download speed is very low, it might fail otherwise"
+    curl -O http://ghtorrent-downloads.ewi.tudelft.nl/mysql/mysql-$DUMP_DATE.sql.gz
+    cd ../..
+    ;;
+  maria:unzip)
+    cd gh_maria_dumps/$DUMP_DATE
+    tar -xzvf mysql-$DUMP_DATE.sql.gz
+    cd ../..
+    ;;
+  maria:restore)
+    docker-compose exec ghmaria bash ./gh_maria_scripts/restore.sh $DUMP_DATE
+    ;;
+  maria:restore:gz)
+    docker-compose exec ghmaria zcat /gh_maria_dumps/$DUMP_DATE/mysql-$DUMP_DATE.sql.gz | mysql -u github-user -pgithub-pass github
+    ;;
+  maria:bash)
+    docker-compose exec ghmaria bash
+    ;;
+  maria:shell)
+    docker-compose exec ghmaria mysql -u github-user -pgithub-pass github
     ;;
   *)
     echo $"Command '$1' not found, usage: $0 [service:action] [?dump_date eg 2015-12-02]"
