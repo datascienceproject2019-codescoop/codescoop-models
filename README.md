@@ -30,15 +30,20 @@ NOTE: some scripts might not work as they should. Please tell me (Teemu) about i
 
 ## Prerequisites
 
-Download Docker, Docker Compose. Make sure your file sharing is on for this folder (so Docker can mount this directory for the containers). Also you'll need ~20 GBs free space for any of GHTorrent's database shenanigans.
+Download Docker, Docker Compose. Make sure your file sharing is on for this folder (so Docker can mount this directory for the containers).
+
+It took me 3 hours and ~15 GBs (4.2+8.6) in storage to restore the MongoDB dump.
+
+7 hours, ~65 GBs (18+47) to restore the MySQL dump. So which one you prefer, is up to you...
 
 If you're using Windows *and* Docker Toolbox I feel sorry for you.
 
 ## About the datasets
 
-GHTorrent author's (and I) recommend using MySQL for the basic stuff. The MySQL version holds the basic structure of the Github's knowledge graph while the MongoDB includes the full JSON responses with commit texts(?) and whatnot. The full MySQL data is couple TBs(?) while the MongoDB is dozen TBs(?). To run the queries against the up-to-date data we could use already available Google Cloud's BigQuery GHTorrent dataset *BUT* it requires either a lot of free credits or big amount of money
+GHTorrent's authors recommend using MySQL for the data analysis which is understandable, makes joining much easier. But to be honest, it's a pain in the butt to restore even one of the smallest of dumps (7 hours and 65 GBs, 47 after deleting the dump file) so I recommend playing with the MongoDB data instead.
 
-LOL  
+To run queries against the up-to-date data it's probably best to use GitHub's own API. Using GHTorrent with BigQuery costs a lot of money to use as the total restored data is in many terabytes.
+  
 https://cloud.google.com/bigquery/pricing
 >Queries (analysis)  
 >$5.00 per TB  
@@ -50,24 +55,24 @@ https://cloud.google.com/bigquery/pricing
 
 This database contains GitHub event data from here http://ghtorrent-downloads.ewi.tudelft.nl/mysql/.
 
-This is ridiculously slow either way you do it; locally or with Docker. I think using either one is fine. Now I have written two versions just to confuse people. Idk.
+This is ridiculously slow either way you do it; locally or with Docker. I think using either one is fine. And now I have written two versions just to confuse people. Hmm.
 
 ## Local installation
 
 1) Install MariaDB to your local machine, mine was 10.3 and it worked fine. If you're on macOS I recommend brew: `brew install mariadb`
 2) Get the dump, probably you should download it using your browser since curl hangs up at times for some reason. I'm using dump of `2014-01-02` http://ghtorrent-downloads.ewi.tudelft.nl/mysql
-3) I recommend unzipping the data to see the actual queries being run and also you can continue a stopped restoration. The unzipped data will be 24 GBs *and* the database once restored at least 12 GBs. Of course do it only if you can afford using extra 24 GBs: `./cmd.sh maria:unzip 2014-01-02`
-4) Run the script: `./gh_maria_scripts/local-restore.sh 2014-01-02`.
-5) Type in the command similar to `source gh_maria_dumps/2014-01-02/mysql-2014-01-02.sql;`. This will generate x amount of data. Without unzipping just run `DUMP_DATE=2014-01-02 cat gh_maria_scripts/init-db.sql | mysql -uroot || true && zcat gh_maria_dumps/$DUMP_DATE/mysql-$DUMP_DATE.sql.gz | mysql -u github-user -pgithub-pass github`.
-6) See if it has worked: `mysql -u github-user -pgithub-pass github` and execute: `select language,count() from projects where forked_from is null group by language;`. If it returns something, great! You are now a MySQL expert.
+3) I recommend unzipping the data (vs directly streaming the .gz dump to the db) to see the actual queries being run and also you can continue a stopped restoration. The unzipped data will be 18 GBs *and* the database once restored 47 GBs: `./cmd.sh maria:unzip 2014-01-02`
+4) Run the script: `./gh_maria_scripts/local-restore.sh 2014-01-02`. This took me 7 hours with MacBook Pro 2015 although I read somewhere that it's possible to speed-up the process by changing settings and perhaps using multi-threaded restoring.
+5) You should see a mysql shell and a output in the terminal similar to `source gh_maria_dumps/2014-01-02/mysql-2014-01-02.sql;`. Copy and paste the command to the shell which will start the restoring. Without unzipping just run `DUMP_DATE=2014-01-02 cat gh_maria_scripts/init-db.sql | mysql -uroot || true && zcat gh_maria_dumps/$DUMP_DATE/mysql-$DUMP_DATE.sql.gz | mysql -u github-user -pgithub-pass github`.
+6) See if it has worked: `mysql -u github-user -pgithub-pass github` and execute: `select language, count(id) from projects where forked_from is null group by language;`. If it returns a long list of projects' languages great! You are now a MySQL expert.
 7) When you no longer need the data run `./gh_maria_scripts/local-delete.sh` to delete it.
 
 ## Using Docker
 
 1) Start up the database: `./cmd.sh maria:start`
 2) Download the second smallest dump of `2014-01-02` (5.5 GB): `./cmd.sh maria:getdump 2014-01-02`
-3) Either unzip (24 GBs) and restore the data so you can see the actual progress and continue a stopped restoration: `./cmd.sh maria:unzip 2014-01-02` and `./cmd.sh maria:restore 2014-01-02`. Or just stream the gzip directly to mysql: `./cmd.sh maria:restore:gz`.
-4) See if it has worked: `./cmd.sh maria:shell` and execute: `select language,count() from projects where forked_from is null group by language;`. If it returns something, great! You are now a MySQL expert.
+3) Either unzip (18 GBs) and restore the data so you can see the actual progress and continue a stopped restoration: `./cmd.sh maria:unzip 2014-01-02` and `./cmd.sh maria:restore 2014-01-02`. Or just stream the gzip directly to mysql: `./cmd.sh maria:restore:gz`.
+4) See if it has worked: `./cmd.sh maria:shell` and execute: `select language, count(id) from projects where forked_from is null group by language;`. If it returns something, great! You are now a MySQL expert.
 
 ## MySQL shell
 
@@ -80,18 +85,18 @@ Some useful commands:
 
 This database contains GitHub event data from here http://ghtorrent.org/downloads.html. It's schema is described here http://ghtorrent.org/files/schema.pdf and the corresponding GitHub API URLs here http://ghtorrent.org/mongo.html (with examples if you click the "Documentation URL" eg https://developer.github.com/v3/repos/comments/#list-comments-for-a-single-commit).
 
-The restoring with direct piping took me 3 hours with my MacBook Pro. Total size of data was with default dump 4.2 GB tarball + 8.9 GB as MongoDB data. Also the MongoDB docker image is 400 MB. So you should have at least (preferably well over) 13.5 GB of free space.
+The restoring with direct piping took me 3 hours with my MacBook Pro 2015. Total size of data was with default dump 4.2 GB tarball + 8.9 GB as MongoDB data. Also the MongoDB docker image is 400 MB. So you should have at least (preferably well over) 13.5 GB of free space.
 
 1) Start up the database: `docker-compose up ghmongo` or `./cmd.sh mongo:start`
-2) Download the second smallest dump (still 4.2 GB, uncompressed 26 GB :DD). Date is optional variable, we're using the second smallest dataset of 2015-12-02 as the default: `./cmd.sh mongo:getdump [?date]`
+2) Download the second smallest dump (still 4.2 GB, uncompressed 26 GB). Date is optional variable, we're using the second smallest dataset of 2015-12-02 as the default: `./cmd.sh mongo:getdump [?date]`
 
-Well since I wanted to make things difficult I avoided the extraction of the data by directly uncompressing the tarball BSON files to mongorestore thus avoiding the 26 GB extra stuff on disk. BUT the problem is it takes a lot longer with streaming. But anyway.
+Well since I wanted to make things difficult I avoided the extraction of the data by directly uncompressing the tarball BSON files to mongorestore thus avoiding the 26 GB extra stuff on disk. I don't know if it took longer doing it this way. But anyway.
 
 3) To avoid extracting the large BSON files, extract only the metadatas. We however have to grep the filenames of those BSON files which is why this takes a while. Unzip the metadata with: `./cmd.sh mongo:unzip [?date]`
 4) Restore the dump from the metadatas and the BSON files: `./cmd.sh mongo:restore [?date]`
 5) Open up the shell to see if it worked: `./cmd.sh mongo:shell`. Run `db.commits.count()` and if the number is 932677 hurray! You can now start getting lost into MongoDB documentation.
 
-I ran this using my MacBook Pro with SSD and stuff so with less powerful machine it might take longer. To view the size of the folders afterwards in macOS you can use: `du -hd1`.
+I had a SSD hard drive and stuff so with less powerful machine it might take longer. To view the size of the folders afterwards in macOS you can use: `du -hd1`.
 
 To delete the database, run: `./cmd.sh mongo:delete`. Otherwise the data will be persisted on disk even when the MongoDB instance is destroyed.
 
