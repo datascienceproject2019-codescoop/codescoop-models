@@ -80,6 +80,8 @@ Open it with `mysql -u github-user -pgithub-pass github` if you have a local ins
 
 Some useful commands:
 * `\q` exits the shell.
+* `show tables` shows the tables of the db.
+* `describe commits` shows the schema of `commits`-table.
 
 ## MongoDB
 
