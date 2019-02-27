@@ -125,7 +125,7 @@ Python 3, virtualenv installed. Also either the MongoDB or MySQL dump restored. 
 
 ## How to install
 
-1) Generate a virtualenv environment: `./jupyter.sh venv:create`. Or you install without it, your call.
+1) Generate a virtualenv environment: `./jupyter.sh venv:create`. Or install without it, your call.
 2) Activate it by pasting this script's output to terminal: `./jupyter.sh venv`
 3) Install the requirements: `./jupyter.sh pip:install`
 4) Start the notebook: `./jupyter.sh notebook`. It should appear at http://localhost:8888
