@@ -5,6 +5,7 @@ gh_mongo_dumps/
 gh_maria_data/
 gh_maria_dumps/
 tmp/
+data/
 notebook-venv/
 .ipynb_checkpoints
 mongo-dump-*.tar.gz
