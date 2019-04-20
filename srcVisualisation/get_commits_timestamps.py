@@ -86,7 +86,7 @@ def get_commits_timestamps(github_client, repository_name, max_commit_number = 2
 
 
 '''
-Trail run to ensure proper functioning
+Trial run to ensure proper functioning
 '''
 if __name__ == "__main__":
 
