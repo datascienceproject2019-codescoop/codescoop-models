@@ -31,6 +31,7 @@ The np arrays can be composed of either four or five elements:
 
 Note: it is assumed that the repository name that is given as a input to the fuctions
       does actually exist in the dataframe
+      (there is no problem if it does not exist on github)
 '''
 
 
