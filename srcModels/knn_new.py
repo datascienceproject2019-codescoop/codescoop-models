@@ -17,7 +17,7 @@ nltk.download('punkt')
 
 pd.set_option('display.max_columns', 500)
 PATH ="/home/patrik/Desktop/Kurssit/DS_Project/repositories-1.2.0-2018-03-12/repositories-1.2.0-2018-03-12.csv"
-dataRepo = pd.read_csv(PATH, nrows = 5000, index_col=False)
+dataRepo = pd.read_csv(PATH, nrows = 500000, index_col=False)
 dataRepo.head()
 
 # build functions that we need for processing descriptions and data
@@ -131,5 +131,3 @@ dists
 #pickle.dump(nbrs, open('knn_model', 'wb'))
 #np.save("/home/patrik/Desktop/Kurssit/DS_Project/knn_data.npy", knn_data)
 #np.savetxt("/home/patrik/Desktop/Kurssit/DS_Project/knn_labes.csv", names, fmt='%s')
-
-#np.savetxt("/home/patrik/Desktop/Kurssit/DS_Project/knn_data.csv", knn_data, delimiter=",")
