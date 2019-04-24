@@ -167,7 +167,7 @@ if __name__ == "__main__":
     # the csv is used to get some repository names
     data = pd.read_csv('../data/repositories-timeseries.csv', usecols = ['Name with Owner'], index_col = False)
 
-    g = Github("1deaaa8ea3908191b41f36b1fdaa5567470634fb")
+    g = Github("insert your github api key")
 
     iterations = 0
 
